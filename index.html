@@ -166,6 +166,12 @@
                     <div id="answer-container" class="absolute inset-0 bg-white border-[12px] border-emerald-500 rounded-[2rem] flex flex-col items-center justify-center z-10 opacity-0 pointer-events-none transition-all duration-300 shadow-2xl scale-95">
                         <div class="bg-emerald-100 text-emerald-800 font-black text-2xl sm:text-3xl px-8 py-2 rounded-full mb-4 sm:mb-8 border-4 border-emerald-300">🎉 正確答案 🎉</div>
                         <div id="answer-text" class="text-5xl sm:text-[6rem] md:text-[8rem] font-black text-slate-900 tracking-wider text-center leading-tight px-4 drop-shadow-md"></div>
+                        
+                        <!-- 修改：改為觸發內建圖片輪播的按鈕 -->
+                        <button id="search-image-btn" onclick="openImageSlider()" class="mt-8 sm:mt-12 bg-sky-500 hover:bg-sky-400 text-white font-black py-3 px-6 sm:py-4 sm:px-8 rounded-2xl text-xl sm:text-3xl shadow-lg transition-all flex items-center gap-2 sm:gap-3 btn-3d border-sky-700">
+                            <i data-lucide="images" class="w-6 h-6 sm:w-8 sm:h-8"></i>
+                            看圖片 (可左右滑動)
+                        </button>
                     </div>
                 </div>
                 
@@ -199,6 +205,49 @@
                 <div class="mt-10 sm:mt-16 inline-flex items-center gap-2 bg-slate-200 text-slate-600 font-bold px-6 py-3 rounded-full text-xl border-2 border-slate-300">
                     <i data-lucide="mouse-pointer-click" class="w-6 h-6"></i> 點擊畫面任意處關閉
                 </div>
+            </div>
+        </div>
+
+        <!-- ==================== 圖片輪播視窗 (Modal) ==================== -->
+        <div id="image-slider-modal" class="hidden fixed inset-0 z-50 bg-slate-900/95 backdrop-blur-md flex-col items-center justify-center p-2 sm:p-6">
+            <!-- 頂部控制列 -->
+            <div class="absolute top-4 right-4 sm:top-8 sm:right-8 z-50">
+                <button onclick="closeImageSlider()" class="bg-white/20 hover:bg-white/40 text-white p-3 rounded-full backdrop-blur-sm transition-colors cursor-pointer">
+                    <i data-lucide="x" class="w-8 h-8"></i>
+                </button>
+            </div>
+            
+            <h3 id="image-slider-title" class="absolute top-6 left-6 sm:top-8 sm:left-8 text-white font-black text-2xl sm:text-4xl drop-shadow-lg z-50"></h3>
+
+            <!-- 圖片展示區 -->
+            <div id="image-slider-content" class="relative w-full max-w-5xl h-[70vh] flex items-center justify-center select-none touch-pan-y mt-12 sm:mt-0">
+                <!-- 載入中動畫 -->
+                <div id="image-loading" class="hidden flex-col items-center justify-center text-white">
+                    <i data-lucide="loader-2" class="w-16 h-16 animate-spin mb-4"></i>
+                    <span class="text-2xl font-bold tracking-widest">尋找相片中...</span>
+                </div>
+                
+                <!-- 圖片本體 -->
+                <img id="slider-image" src="" alt="相關圖片" class="hidden max-w-full max-h-full object-contain rounded-2xl shadow-2xl pointer-events-none" />
+                
+                <!-- 找不到圖片的提示 -->
+                <div id="image-error" class="hidden flex-col items-center justify-center text-slate-400">
+                    <i data-lucide="image-off" class="w-20 h-20 mb-4 opacity-50"></i>
+                    <span class="text-2xl font-bold">目前找不到這題的相片哦！</span>
+                </div>
+
+                <!-- 左右控制按鈕 (電腦版點擊用) -->
+                <button id="slider-prev-btn" onclick="prevImage(event)" class="absolute left-2 sm:-left-12 top-1/2 -translate-y-1/2 bg-black/60 hover:bg-black/80 text-white p-4 rounded-full backdrop-blur-sm transition-colors z-10 hidden cursor-pointer">
+                    <i data-lucide="chevron-left" class="w-8 h-8 sm:w-10 sm:h-10"></i>
+                </button>
+                <button id="slider-next-btn" onclick="nextImage(event)" class="absolute right-2 sm:-right-12 top-1/2 -translate-y-1/2 bg-black/60 hover:bg-black/80 text-white p-4 rounded-full backdrop-blur-sm transition-colors z-10 hidden cursor-pointer">
+                    <i data-lucide="chevron-right" class="w-8 h-8 sm:w-10 sm:h-10"></i>
+                </button>
+            </div>
+
+            <!-- 底部進度指示 -->
+            <div class="absolute bottom-8 left-1/2 -translate-x-1/2 bg-black/60 px-6 py-2 rounded-full backdrop-blur-sm">
+                <span id="slider-counter" class="text-white font-bold text-xl tracking-widest">1 / 1</span>
             </div>
         </div>
 
@@ -424,6 +473,12 @@
         let isShowAns = false;
         const PROGRESS_KEY_PREFIX = 'guess_game_progress_';
 
+        // 圖片輪播狀態
+        let imagesData = [];
+        let currentImgIdx = 0;
+        let touchStartX = 0;
+        let touchEndX = 0;
+
         // --- 音效系統 ---
         const AudioContext = window.AudioContext || window.webkitAudioContext;
         let audioCtx = null;
@@ -597,6 +652,7 @@
 
             if (isShowAns) {
                 ansTextEl.textContent = q.answer;
+                
                 ansContainer.classList.remove('opacity-0', 'pointer-events-none', 'scale-95');
                 ansContainer.classList.add('opacity-100', 'pointer-events-auto', 'scale-100');
             } else {
@@ -669,6 +725,138 @@
                 
                 playSound('click');
                 renderGame();
+            }
+        }
+
+        // ========== 圖片輪播系統 ==========
+        async function openImageSlider() {
+            playSound('click');
+            const keyword = activeQuestions[currentQ].answer;
+            const modal = document.getElementById('image-slider-modal');
+            const title = document.getElementById('image-slider-title');
+            const loading = document.getElementById('image-loading');
+            const imgEl = document.getElementById('slider-image');
+            const errorEl = document.getElementById('image-error');
+            const prevBtn = document.getElementById('slider-prev-btn');
+            const nextBtn = document.getElementById('slider-next-btn');
+            const counter = document.getElementById('slider-counter');
+
+            modal.classList.remove('hidden');
+            modal.classList.add('flex');
+            title.textContent = keyword;
+            
+            // 重置狀態
+            imgEl.classList.add('hidden');
+            errorEl.classList.add('hidden');
+            prevBtn.classList.add('hidden');
+            nextBtn.classList.add('hidden');
+            counter.textContent = '- / -';
+            loading.classList.remove('hidden');
+            loading.classList.add('flex');
+
+            imagesData = [];
+            currentImgIdx = 0;
+
+            try {
+                // 使用開源的 Wikimedia Commons API 搜尋相關圖片
+                const url = `https://commons.wikimedia.org/w/api.php?action=query&generator=search&gsrsearch=${encodeURIComponent(keyword)}&gsrnamespace=6&gsrlimit=10&prop=imageinfo&iiprop=url&format=json&origin=*`;
+                const res = await fetch(url);
+                const data = await res.json();
+
+                if (data.query && data.query.pages) {
+                    const pages = data.query.pages;
+                    for (let id in pages) {
+                        const info = pages[id].imageinfo;
+                        if (info && info[0] && info[0].url) {
+                            const imgUrl = info[0].url;
+                            // 過濾掉不適合的檔案格式，保留常見相片
+                            if (imgUrl.match(/\.(jpeg|jpg|png|webp)$/i) && !imgUrl.includes('Ambox') && !imgUrl.includes('Commons-logo')) {
+                                imagesData.push(imgUrl);
+                            }
+                        }
+                    }
+                }
+            } catch (err) {
+                console.error("圖片載入失敗", err);
+            }
+
+            loading.classList.remove('flex');
+            loading.classList.add('hidden');
+
+            if (imagesData.length > 0) {
+                updateSliderView();
+            } else {
+                errorEl.classList.remove('hidden');
+                errorEl.classList.add('flex');
+            }
+            
+            lucide.createIcons(); // 更新圖示
+        }
+
+        function closeImageSlider() {
+            playSound('click');
+            const modal = document.getElementById('image-slider-modal');
+            modal.classList.add('hidden');
+            modal.classList.remove('flex');
+            document.getElementById('slider-image').src = ""; // 釋放記憶體
+        }
+
+        function updateSliderView() {
+            const imgEl = document.getElementById('slider-image');
+            const prevBtn = document.getElementById('slider-prev-btn');
+            const nextBtn = document.getElementById('slider-next-btn');
+            const counter = document.getElementById('slider-counter');
+
+            imgEl.src = imagesData[currentImgIdx];
+            imgEl.classList.remove('hidden');
+
+            counter.textContent = `${currentImgIdx + 1} / ${imagesData.length}`;
+
+            // 如果有多張圖才顯示左右按鈕
+            if (imagesData.length > 1) {
+                prevBtn.classList.remove('hidden');
+                nextBtn.classList.remove('hidden');
+            } else {
+                prevBtn.classList.add('hidden');
+                nextBtn.classList.add('hidden');
+            }
+        }
+
+        function nextImage(e) {
+            if(e) e.stopPropagation();
+            if (imagesData.length <= 1) return;
+            playSound('click');
+            currentImgIdx = (currentImgIdx + 1) % imagesData.length;
+            updateSliderView();
+        }
+
+        function prevImage(e) {
+            if(e) e.stopPropagation();
+            if (imagesData.length <= 1) return;
+            playSound('click');
+            currentImgIdx = (currentImgIdx - 1 + imagesData.length) % imagesData.length;
+            updateSliderView();
+        }
+
+        // --- 支援手機觸控滑動 (Swipe) ---
+        const sliderContent = document.getElementById('image-slider-content');
+        sliderContent.addEventListener('touchstart', e => {
+            touchStartX = e.changedTouches[0].screenX;
+        }, { passive: true });
+
+        sliderContent.addEventListener('touchend', e => {
+            touchEndX = e.changedTouches[0].screenX;
+            handleSwipe();
+        }, { passive: true });
+
+        function handleSwipe() {
+            if (imagesData.length <= 1) return;
+            const threshold = 50; // 滑動感應距離
+            if (touchEndX < touchStartX - threshold) {
+                nextImage(); // 向左滑，下一張
+            }
+            if (touchEndX > touchStartX + threshold) {
+                prevImage(); // 向右滑，上一張
             }
         }
     </script>
