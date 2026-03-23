@@ -1,0 +1,676 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>猜猜我是誰 - 提示搶答遊戲</title>
+    <!-- 引入 Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- 引入 Lucide Icons -->
+    <script src="https://unpkg.com/lucide@latest"></script>
+    <!-- 自訂樣式 -->
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Noto+Sans+TC:wght@500;700;900&display=swap');
+        
+        body {
+            font-family: 'Noto Sans TC', sans-serif;
+            -webkit-tap-highlight-color: transparent;
+            /* 防止 iOS 橡皮筋回彈效果 */
+            overscroll-behavior: none; 
+        }
+
+        /* ========== 核心版面控制：保證不捲動 & 電腦版 16:9 ========== */
+        .app-wrapper {
+            width: 100vw;
+            height: 100dvh;
+            background-color: #f8fafc;
+            display: flex;
+            flex-direction: column;
+            position: relative;
+            overflow: hidden;
+        }
+
+        @media (min-width: 640px) {
+            .app-wrapper {
+                width: 100vw;
+                height: 56.25vw; /* 16:9 Aspect Ratio */
+                max-height: 100dvh;
+                max-width: 177.78dvh;
+                margin: auto;
+                border-radius: 1.5rem;
+                border: 6px solid #1e293b;
+                box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.5);
+            }
+        }
+
+        /* ========== 立體按鈕樣式 ========== */
+        .btn-3d {
+            transition: all 0.1s;
+            border-bottom-width: 6px;
+        }
+        .btn-3d:active:not(:disabled) {
+            border-bottom-width: 0px;
+            transform: translateY(6px);
+        }
+        .btn-3d:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+            border-bottom-width: 2px;
+            transform: translateY(4px);
+        }
+    </style>
+</head>
+<!-- 電腦版深色背景，凸顯中間的遊戲視窗 -->
+<body class="bg-slate-900 flex items-center justify-center h-[100dvh] w-screen overflow-hidden select-none text-slate-900">
+
+    <!-- 唯一的應用程式容器 -->
+    <div class="app-wrapper">
+        
+        <!-- ==================== 開始畫面 ==================== -->
+        <div id="start-screen" class="flex flex-col h-full w-full p-4 sm:p-8 bg-slate-100">
+            
+            <!-- 標題區 -->
+            <div class="shrink-0 flex flex-col items-center justify-center mb-4 sm:mb-8 pt-2 sm:pt-4">
+                <div class="flex items-center gap-3 sm:gap-6 mb-2">
+                    <i data-lucide="map" class="w-12 h-12 sm:w-16 sm:h-16 text-indigo-600"></i>
+                    <h1 class="text-4xl sm:text-5xl md:text-6xl font-black text-slate-900 tracking-wider">猜猜我是誰</h1>
+                </div>
+                <p class="text-slate-600 text-xl sm:text-2xl font-bold bg-slate-200 px-6 py-2 rounded-full border-2 border-slate-300">請選擇挑戰的縣市</p>
+            </div>
+            
+            <!-- 縣市按鈕網格 -->
+            <div class="flex-1 min-h-0 w-full max-w-5xl mx-auto pb-4">
+                <div class="grid grid-cols-2 sm:grid-cols-4 gap-3 sm:gap-5 h-full">
+                    <button onclick="startGame('taipei')" class="flex flex-col items-center justify-center bg-white border-4 border-slate-300 rounded-2xl hover:bg-blue-50 hover:border-blue-500 btn-3d active:border-blue-500">
+                        <i data-lucide="building-2" class="w-10 h-10 sm:w-14 sm:h-14 text-blue-600 mb-2 sm:mb-4"></i>
+                        <h3 class="text-3xl sm:text-4xl font-black text-slate-800">台北</h3>
+                    </button>
+                    <button onclick="startGame('new_taipei')" class="flex flex-col items-center justify-center bg-white border-4 border-slate-300 rounded-2xl hover:bg-indigo-50 hover:border-indigo-500 btn-3d active:border-indigo-500">
+                        <i data-lucide="train" class="w-10 h-10 sm:w-14 sm:h-14 text-indigo-600 mb-2 sm:mb-4"></i>
+                        <h3 class="text-3xl sm:text-4xl font-black text-slate-800">新北</h3>
+                    </button>
+                    <button onclick="startGame('taoyuan')" class="flex flex-col items-center justify-center bg-white border-4 border-slate-300 rounded-2xl hover:bg-sky-50 hover:border-sky-500 btn-3d active:border-sky-500">
+                        <i data-lucide="plane" class="w-10 h-10 sm:w-14 sm:h-14 text-sky-600 mb-2 sm:mb-4"></i>
+                        <h3 class="text-3xl sm:text-4xl font-black text-slate-800">桃園</h3>
+                    </button>
+                    <button onclick="startGame('taichung')" class="flex flex-col items-center justify-center bg-white border-4 border-slate-300 rounded-2xl hover:bg-orange-50 hover:border-orange-500 btn-3d active:border-orange-500">
+                        <i data-lucide="sun" class="w-10 h-10 sm:w-14 sm:h-14 text-orange-600 mb-2 sm:mb-4"></i>
+                        <h3 class="text-3xl sm:text-4xl font-black text-slate-800">台中</h3>
+                    </button>
+                    <button onclick="startGame('tainan')" class="flex flex-col items-center justify-center bg-white border-4 border-slate-300 rounded-2xl hover:bg-red-50 hover:border-red-500 btn-3d active:border-red-500">
+                        <i data-lucide="utensils" class="w-10 h-10 sm:w-14 sm:h-14 text-red-600 mb-2 sm:mb-4"></i>
+                        <h3 class="text-3xl sm:text-4xl font-black text-slate-800">台南</h3>
+                    </button>
+                    <button onclick="startGame('kaohsiung')" class="flex flex-col items-center justify-center bg-white border-4 border-slate-300 rounded-2xl hover:bg-cyan-50 hover:border-cyan-500 btn-3d active:border-cyan-500">
+                        <i data-lucide="ship" class="w-10 h-10 sm:w-14 sm:h-14 text-cyan-600 mb-2 sm:mb-4"></i>
+                        <h3 class="text-3xl sm:text-4xl font-black text-slate-800">高雄</h3>
+                    </button>
+                    <button onclick="startGame('pingtung')" class="flex flex-col items-center justify-center bg-white border-4 border-slate-300 rounded-2xl hover:bg-yellow-50 hover:border-yellow-500 btn-3d active:border-yellow-500">
+                        <i data-lucide="palmtree" class="w-10 h-10 sm:w-14 sm:h-14 text-yellow-600 mb-2 sm:mb-4"></i>
+                        <h3 class="text-3xl sm:text-4xl font-black text-slate-800">屏東</h3>
+                    </button>
+                    <button onclick="startGame('yilan')" class="flex flex-col items-center justify-center bg-white border-4 border-slate-300 rounded-2xl hover:bg-emerald-50 hover:border-emerald-500 btn-3d active:border-emerald-500">
+                        <i data-lucide="tent" class="w-10 h-10 sm:w-14 sm:h-14 text-emerald-600 mb-2 sm:mb-4"></i>
+                        <h3 class="text-3xl sm:text-4xl font-black text-slate-800">宜蘭</h3>
+                    </button>
+                </div>
+            </div>
+        </div>
+
+        <!-- ==================== 遊戲畫面 ==================== -->
+        <div id="game-screen" class="hidden flex-col h-full w-full bg-slate-100 relative">
+            
+            <!-- 頂部導覽列 -->
+            <header class="h-16 sm:h-20 bg-slate-800 text-white flex items-center justify-between px-3 sm:px-6 shrink-0 z-20 shadow-md">
+                <div class="flex items-center gap-3">
+                    <button onclick="returnToHome()" class="p-2 sm:p-3 bg-slate-700 hover:bg-slate-600 rounded-xl transition-colors border-2 border-slate-600 active:bg-slate-500 cursor-pointer">
+                        <i data-lucide="home" class="w-6 h-6 sm:w-8 sm:h-8"></i>
+                    </button>
+                    <div class="hidden sm:flex items-center gap-3 ml-2">
+                        <span id="mode-badge" class="px-4 py-1 rounded-full font-black text-lg border-2 bg-slate-100 text-slate-900 border-slate-400">主題</span>
+                    </div>
+                </div>
+                
+                <h2 class="text-2xl sm:text-3xl md:text-4xl font-black tracking-widest absolute left-1/2 -translate-x-1/2">猜猜我是誰</h2>
+                
+                <div class="flex items-center gap-2 sm:gap-4">
+                    <div class="bg-slate-900 px-3 sm:px-5 py-1 sm:py-2 rounded-full border-2 border-slate-600 font-bold text-lg sm:text-xl">
+                        <span id="progress-text">1/20</span>
+                    </div>
+                    <button onclick="toggleMute()" id="btn-mute" class="p-2 sm:p-3 bg-slate-700 hover:bg-slate-600 rounded-xl transition-colors border-2 border-slate-600">
+                        <i data-lucide="volume-2" id="mute-icon" class="w-6 h-6 sm:w-8 sm:h-8"></i>
+                    </button>
+                </div>
+            </header>
+
+            <!-- 畫面主體 -->
+            <main class="flex-1 flex flex-col min-h-0 p-3 sm:p-6 pb-0 max-w-6xl mx-auto w-full">
+                
+                <!-- 題目狀態 -->
+                <div class="flex justify-between items-end mb-3 sm:mb-4 shrink-0 px-1 sm:px-2">
+                    <h2 id="question-title" class="text-4xl sm:text-5xl font-black text-slate-900 border-b-4 border-slate-400 pb-1">第 1 題</h2>
+                    <div class="text-xl sm:text-2xl font-bold text-slate-700 bg-white px-4 py-1.5 sm:py-2 rounded-xl border-4 border-slate-300 shadow-sm flex items-center gap-2">
+                        <span>已開提示:</span>
+                        <span id="revealed-count" class="text-indigo-600 text-3xl sm:text-4xl font-black">0</span>
+                        <span>/ 6</span>
+                    </div>
+                </div>
+
+                <!-- 九宮格提示區 -->
+                <div class="flex-1 min-h-0 relative mb-3 sm:mb-6">
+                    <div id="clues-grid" class="absolute inset-0 grid grid-cols-2 sm:grid-cols-3 grid-rows-3 sm:grid-rows-2 gap-3 sm:gap-5">
+                        <!-- 動態插入 -->
+                    </div>
+
+                    <!-- 答案揭曉 -->
+                    <div id="answer-container" class="absolute inset-0 bg-white border-[12px] border-emerald-500 rounded-[2rem] flex flex-col items-center justify-center z-10 opacity-0 pointer-events-none transition-all duration-300 shadow-2xl scale-95">
+                        <div class="bg-emerald-100 text-emerald-800 font-black text-2xl sm:text-3xl px-8 py-2 rounded-full mb-4 sm:mb-8 border-4 border-emerald-300">🎉 正確答案 🎉</div>
+                        <div id="answer-text" class="text-5xl sm:text-[6rem] md:text-[8rem] font-black text-slate-900 tracking-wider text-center leading-tight px-4 drop-shadow-md"></div>
+                    </div>
+                </div>
+                
+            </main>
+
+            <!-- 底部控制列 -->
+            <div class="h-[90px] sm:h-[110px] shrink-0 bg-slate-800 border-t-4 border-slate-900 grid grid-cols-4 gap-2 sm:gap-5 p-3 sm:p-5 pb-safe z-20">
+                <button id="btn-prev" onclick="changeQuestion(-1)" class="btn-3d flex flex-col sm:flex-row items-center justify-center gap-1 sm:gap-2 bg-slate-200 text-slate-800 border-slate-400 rounded-xl sm:rounded-2xl font-black text-lg sm:text-2xl">
+                    <i data-lucide="chevron-left" class="w-7 h-7 sm:w-10 sm:h-10"></i>
+                    <span class="hidden sm:inline">上一題</span>
+                </button>
+                <button id="btn-next" onclick="changeQuestion(1)" class="btn-3d flex flex-col sm:flex-row items-center justify-center gap-1 sm:gap-2 bg-slate-200 text-slate-800 border-slate-400 rounded-xl sm:rounded-2xl font-black text-lg sm:text-2xl">
+                    <span class="hidden sm:inline">下一題</span>
+                    <i data-lucide="chevron-right" class="w-7 h-7 sm:w-10 sm:h-10"></i>
+                </button>
+                <button id="btn-open-clue" onclick="nextClue()" class="btn-3d flex flex-col sm:flex-row items-center justify-center gap-1 sm:gap-2 bg-indigo-600 text-white border-indigo-900 rounded-xl sm:rounded-2xl font-black text-xl sm:text-3xl">
+                    <i data-lucide="search" class="w-7 h-7 sm:w-10 sm:h-10"></i>
+                    <span>開提示</span>
+                </button>
+                <button id="btn-show-ans" onclick="showAnswer()" class="btn-3d flex flex-col sm:flex-row items-center justify-center gap-1 sm:gap-2 bg-rose-600 text-white border-rose-900 rounded-xl sm:rounded-2xl font-black text-xl sm:text-3xl">
+                    <i data-lucide="eye" class="w-7 h-7 sm:w-10 sm:h-10"></i>
+                    <span>看答案</span>
+                </button>
+            </div>
+        </div>
+
+        <!-- ==================== 提示放大視窗 (Modal) ==================== -->
+        <div id="clue-modal" class="hidden fixed inset-0 z-50 bg-slate-900/80 backdrop-blur-sm flex-col items-center justify-center p-6 cursor-pointer" onclick="closeClueModal()">
+            <div id="clue-modal-content" class="bg-white rounded-[2rem] border-[10px] border-indigo-500 p-8 sm:p-12 max-w-3xl w-full text-center shadow-2xl">
+                <p id="clue-modal-text" class="text-4xl sm:text-5xl md:text-[4rem] font-black text-slate-900 leading-tight tracking-wide"></p>
+                <div class="mt-10 sm:mt-16 inline-flex items-center gap-2 bg-slate-200 text-slate-600 font-bold px-6 py-3 rounded-full text-xl border-2 border-slate-300">
+                    <i data-lucide="mouse-pointer-click" class="w-6 h-6"></i> 點擊畫面任意處關閉
+                </div>
+            </div>
+        </div>
+
+    </div>
+
+    <!-- ==================== 遊戲邏輯腳本 ==================== -->
+    <script>
+        const cityData = {
+            taipei: {
+                name: "台北",
+                color: "blue",
+                questions: [
+                    { answer: "台北101", clues: ["跨年煙火", "曾是世界最高", "信義區地標", "巨大風阻尼器", "綠色竹節外觀", "89樓觀景台"] },
+                    { answer: "故宮博物院", clues: ["翠玉白菜", "肉形石", "外雙溪", "歷史文物珍寶", "中式宮殿建築", "觀光客必去"] },
+                    { answer: "中正紀念堂", clues: ["藍白建築", "自由廣場", "儀隊交接", "廣場鴿子很多", "捷運綠線紅線交會", "八角頂"] },
+                    { answer: "士林夜市", clues: ["豪大大雞排", "台北最大夜市", "劍潭站出來就到", "陽明戲院舊址", "藥燉排骨", "飛來發"] },
+                    { answer: "陽明山", clues: ["擎天崗看牛", "竹子湖海芋季", "硫磺谷", "台北後花園", "文化大學夜景", "洗溫泉"] },
+                    { answer: "西門町", clues: ["年輕人聚集", "捷運六號出口", "紅樓", "萬年大樓", "街頭藝人", "阿宗麵線"] },
+                    { answer: "木柵動物園", clues: ["企鵝館", "圓寶貓熊", "旁邊搭纜車", "台北市立", "腹地廣大走超累", "無尾熊"] },
+                    { answer: "貓空纜車", clues: ["水晶透明車廂", "到山上泡茶", "動物園旁", "終點是貓空站", "俯瞰台北", "綠色車廂"] },
+                    { answer: "龍山寺", clues: ["萬華區", "台北最老寺廟", "拜月老很靈", "捷運站旁", "廣州街夜市旁", "剝皮寮附近"] },
+                    { answer: "饒河街夜市", clues: ["松山區", "慈祐宮旁", "胡椒餅排隊", "藥燉排骨", "牌樓很顯眼", "彩虹橋旁"] },
+                    { answer: "迪化街", clues: ["大稻埕", "過年買年貨", "霞海城隍廟", "中藥行", "布莊", "復古街屋"] },
+                    { answer: "象山", clues: ["看101最佳地點", "六巨石", "信義區爬山", "跨年卡位", "捷運紅線終點", "陡峭階梯"] },
+                    { answer: "圓山大飯店", clues: ["紅色中國風建築", "劍潭山上", "密道導覽", "國宴餐廳", "14層樓宮殿", "高速公路旁"] },
+                    { answer: "寧夏夜市", clues: ["千歲宴", "圓環附近", "蚵仔煎", "炸芋丸", "範圍不大但必吃", "雙連站"] },
+                    { answer: "大安森林公園", clues: ["台北都市之肺", "建國高架旁", "露天音樂台", "生態池", "看螢火蟲", "捷運有陽光大廳"] },
+                    { answer: "北投溫泉", clues: ["新北投站", "綠建築圖書館", "溫泉博物館", "地熱谷", "濃濃硫磺味", "泡湯勝地"] },
+                    { answer: "建國花市", clues: ["只有週末營業", "建國高架橋下", "買盆栽", "台北最大花市", "靠近大安森林公園", "買多肉植物"] },
+                    { answer: "行天宮", clues: ["不燒香", "不供供品", "主祀關公", "藍色道袍收驚", "民權松江路口", "台北香火鼎盛"] },
+                    { answer: "華山文創園區", clues: ["舊酒廠改建", "展覽很多", "大草皮", "光華商場旁", "忠孝新生站", "文青聚集地"] },
+                    { answer: "永康街", clues: ["芒果冰", "鼎泰豐總店", "東門站", "異國料理", "日本客最愛", "蔥抓餅"] }
+                ]
+            },
+            new_taipei: {
+                name: "新北",
+                color: "indigo",
+                questions: [
+                    { answer: "九份老街", clues: ["阿妹茶樓", "吃芋圓", "山城海景", "悲情城市", "階梯很多", "豎崎路"] },
+                    { answer: "平溪", clues: ["放天燈", "平溪鐵道", "十分瀑布", "元宵節", "火車門前過", "寫願望"] },
+                    { answer: "淡水老街", clues: ["吃阿給", "阿婆鐵蛋", "看夕陽", "渡船頭", "紅毛城", "捷運紅線終點"] },
+                    { answer: "野柳地質公園", clues: ["女王頭", "海蝕地形", "萬里區", "蕈狀岩", "風化石", "觀光客必排隊拍照"] },
+                    { answer: "碧潭", clues: ["新店區", "踩天鵝船", "吊橋", "捷運綠線終點", "水岸餐廳", "和美山步道"] },
+                    { answer: "烏來", clues: ["原住民泰雅族", "泡溫泉", "看瀑布", "搭台車", "烤山豬肉香腸", "新北最南端"] },
+                    { answer: "歡樂耶誕城", clues: ["板橋車站前", "每年底舉辦", "超大光雕秀", "竹筍地標", "人山人海", "巨星演唱會"] },
+                    { answer: "深坑老街", clues: ["吃臭豆腐", "豆腐冰淇淋", "紅磚街屋", "大樹下", "烤串豆腐", "保儀大夫廟"] },
+                    { answer: "鶯歌老街", clues: ["陶瓷", "捏陶體驗", "陶瓷博物館", "陶瓷老街", "阿婆壽司", "買碗盤"] },
+                    { answer: "三峽老街", clues: ["金牛角麵包", "清水祖師廟", "紅磚拱廊", "藍染", "李梅樹紀念館", "老街很長"] },
+                    { answer: "十分瀑布", clues: ["台版尼加拉瀑布", "平溪線", "簾幕式瀑布", "走路要走一段", "水勢浩大", "鐵道旁"] },
+                    { answer: "白沙灣", clues: ["石門區", "玩水踏浪", "北海岸", "麟山鼻", "沙灘很大", "夏天必去"] },
+                    { answer: "烘爐地", clues: ["中和區", "巨大土地公像", "求財拜拜", "看大台北夜景", "爬很多樓梯", "南勢角"] },
+                    { answer: "金山老街", clues: ["金包里老街", "廟口鴨肉", "自己端菜", "地瓜特產", "泡溫泉", "靠北海岸"] },
+                    { answer: "猴硐", clues: ["貓村", "瑞芳區", "很多貓咪", "煤礦歷史", "貓橋", "買貓咪紀念品"] },
+                    { answer: "福隆", clues: ["國際沙雕季", "月台便當", "舊草嶺隧道", "騎腳踏車", "海水浴場", "貢寮區"] },
+                    { answer: "八里", clues: ["左岸公園", "吃雙胞胎", "騎腳踏車", "淡水渡船頭對面", "十三行博物館", "文旦柚"] },
+                    { answer: "石門洞", clues: ["北海岸", "海蝕洞", "貝殼沙灘", "賣燒酒螺", "抓螃蟹", "新北最北端"] },
+                    { answer: "烏來瀑布", clues: ["落差超大", "泰雅族部落", "搭台車去看", "櫻花季", "纜車在上方", "南勢溪"] },
+                    { answer: "林本源園邸", clues: ["板橋林家花園", "台灣最完整古園林", "仿江南庭園", "尋根探訪", "假山流水", "國定古蹟"] }
+                ]
+            },
+            taoyuan: {
+                name: "桃園",
+                color: "sky",
+                questions: [
+                    { answer: "桃園國際機場", clues: ["出國必去", "第一第二航廈", "航空科學館舊址", "免稅店", "捷運可達", "台灣大門"] },
+                    { answer: "大溪老街", clues: ["吃黑豆干", "木器行", "巴洛克建築", "跨大漢溪", "打大陀螺", "和平路"] },
+                    { answer: "石門水庫", clues: ["活魚三吃", "桃園最大水庫", "洩洪很壯觀", "騎腳踏車", "賞楓", "大壩"] },
+                    { answer: "慈湖", clues: ["大溪區", "蔣公陵寢", "銅像公園", "儀隊交接", "黑天鵝", "觀光勝地"] },
+                    { answer: "拉拉山", clues: ["買水蜜桃", "神木群", "復興區", "泰雅族", "高海拔", "避暑勝地"] },
+                    { answer: "小人國", clues: ["龍潭區", "迷你建築模型", "遊樂園", "哆啦A夢曾展出", "轟浪", "適合親子"] },
+                    { answer: "竹圍漁港", clues: ["大園區", "買海鮮", "航空港旋轉餐廳", "跨海人行拱橋", "看飛機", "漁產品直銷中心"] },
+                    { answer: "角板山", clues: ["復興區", "梅花季", "戰備隧道", "蔣公行館", "形象商圈", "泰雅族香菇"] },
+                    { answer: "龍岡", clues: ["忠貞市場", "吃米干", "雲南滇緬美食", "國旗屋", "平鎮中壢交界", "破酥包"] },
+                    { answer: "永安漁港", clues: ["新屋區", "客家漁港", "綠色走廊騎車", "海鮮餐廳", "觀海橋", "牽罟文化"] },
+                    { answer: "Xpark", clues: ["青埔區", "日本水族館", "企鵝咖啡廳", "水母牆", "華泰名品城旁", "高鐵站附近"] },
+                    { answer: "華泰名品城", clues: ["青埔區", "美式Outlet", "高鐵站對面", "精品打折", "露天購物", "聖誕村"] },
+                    { answer: "埔心牧場", clues: ["楊梅區", "擠牛奶", "餵小牛", "烤肉露營", "賽豬賽羊", "老牌農場"] },
+                    { answer: "虎頭山", clues: ["桃園區後花園", "奧爾森林學堂", "烤肉區", "環保公園看夜景", "很多溜滑梯", "看貓頭鷹"] },
+                    { answer: "桃園神社", clues: ["台灣最完整日式神社", "忠烈祠", "虎頭山旁", "檜木建築", "拍日系美照", "豆花店進駐"] },
+                    { answer: "蛋寶生技不老村", clues: ["平鎮區", "日式鳥居", "浴衣體驗", "雞蛋主題", "觀光工廠", "橘紅建築"] },
+                    { answer: "棒球場", clues: ["樂天桃猿主場", "青埔區", "啦啦隊很紅", "搭機捷可看比賽", "烤肉席", "桃園體育園區站"] },
+                    { answer: "大平紅橋", clues: ["龍潭區", "百年紅磚橋", "曾是打卡秘境", "跨越打鐵坑溪", "糯米橋", "具歷史價值"] },
+                    { answer: "觀音蓮花季", clues: ["觀音區", "夏天賞蓮", "坐大王蓮", "蓮子大餐", "蓮花池", "休閒農場多"] },
+                    { answer: "巧克力共和國", clues: ["八德區", "宏亞食品", "七七乳加", "巧克力DIY", "觀光工廠", "建築像巧克力"] }
+                ]
+            },
+            taichung: {
+                name: "台中",
+                color: "orange",
+                questions: [
+                    { answer: "台中公園湖心亭", clues: ["歷史地標", "百年公園", "雙併式涼亭", "旁邊可划船", "台中市徽", "台灣八景"] },
+                    { answer: "太陽餅", clues: ["著名特產", "多層次酥皮", "麥芽糖內餡", "形狀圓圓的", "早期叫麥芽餅", "搭火車必買"] },
+                    { answer: "東泉辣椒醬", clues: ["神級調味料", "紅色玻璃瓶", "吃炒麵必加", "味道甜甜辣辣", "台中人的血液", "在地老字號"] },
+                    { answer: "麻薏湯", clues: ["夏天限定", "植物嫩葉搓洗", "微苦回甘", "加地瓜魩仔魚", "老輩消暑聖品", "濃稠深綠色"] },
+                    { answer: "大甲鎮瀾宮", clues: ["香火鼎盛", "海線主祀媽祖", "春天遶境進香", "世界三大宗教盛事", "鑽轎底求平安", "附近賣奶油酥餅"] },
+                    { answer: "第二市場", clues: ["百年市場", "六角樓放射狀", "排隊老店", "菜頭粿糯米腸", "老賴紅茶", "早年賣高級食材"] },
+                    { answer: "科博館", clues: ["室內教育景點", "門口有巨大水鐘", "會動的恐龍", "太空劇場", "旁邊有植物園", "校外教學必去"] },
+                    { answer: "高美濕地", clues: ["清水自然生態", "招潮蟹彈塗魚", "長長木棧道", "賞夕陽勝地", "白色風力發電", "一生必遊絕景"] },
+                    { answer: "宮原眼科", clues: ["火車站附近", "日治眼科診所", "糕餅業者改建", "像哈利波特圖書館", "賣冰淇淋伴手禮", "冰淇淋可加配料"] },
+                    { answer: "大坑風景區", clues: ["台中後花園", "12條登山步道", "長輩愛去爬山", "特色圓木棧道", "附近有芋圓冰", "有名甕窯雞"] },
+                    { answer: "台式炒麵", clues: ["台中傳統早餐", "黃色麵條", "淋香噴肉燥", "必加紅色辣椒醬", "搭配豬血湯", "湯加酸菜韭菜"] },
+                    { answer: "谷關溫泉", clues: ["和平區溫泉鄉", "大甲溪畔", "弱鹼碳酸泉", "中部泡湯勝地", "著名吊橋", "登山起點"] },
+                    { answer: "珍珠奶茶", clues: ["台中發源飲品", "春水堂創始", "雪克杯搖泡沫", "Ｑ彈粉圓", "粗吸管", "紅遍全球"] },
+                    { answer: "逢甲夜市", clues: ["最大觀光夜市", "知名大學周邊", "創新小吃發源地", "大腸包小腸", "服飾手機殼", "假日人潮擁擠"] },
+                    { answer: "大麵羹", clues: ["台中獨有小吃", "麵條粗湯濃稠", "特殊鹼味", "加韭菜菜脯", "有人愛有人怕", "古早味下午茶"] },
+                    { answer: "霧峰林家", clues: ["霧峰國定古蹟", "最大傳統民居", "清朝豪門家族", "頂厝下厝萊園", "建築雕刻精美", "林獻堂家族"] },
+                    { answer: "廟東夜市", clues: ["豐原慈濟宮旁", "短短巷子擠滿美食", "排骨酥麵", "鳳梨冰清蒸肉圓", "白天就有開", "在地人推薦"] },
+                    { answer: "東豐自行車道", clues: ["廢棄鐵道改建", "豐原石岡東勢", "跨大甲溪鐵橋", "兩旁綠樹涼爽", "石岡水壩", "適合全家運動"] },
+                    { answer: "國家歌劇院", clues: ["七期現代地標", "伊東豊雄設計", "美聲涵洞曲面", "專業表演場館", "晚上點燈很美", "夏綠地公園"] },
+                    { answer: "梧棲漁港", clues: ["海線觀光漁港", "買新鮮海鮮", "熟食區烤魷魚", "吃海鮮大餐", "冬天買烏魚子", "附近三井Outlet"] }
+                ]
+            },
+            tainan: {
+                name: "台南",
+                color: "red",
+                questions: [
+                    { answer: "安平古堡", clues: ["荷蘭人建", "熱蘭遮城", "台灣最古老要塞", "旁邊有老街", "紅白瞭望台", "台南安平"] },
+                    { answer: "牛肉湯", clues: ["台南早餐", "溫體肉", "滾湯淋肉", "粉紅色肉片", "配肉燥飯", "薑絲甜油膏"] },
+                    { answer: "林百貨", clues: ["台南第一間百貨", "有電梯", "五層樓仔", "日治時期", "頂樓神社", "文創商場"] },
+                    { answer: "棺材板", clues: ["台南小吃", "炸厚片吐司", "中間挖空", "填入濃湯", "外型像木盒", "名字有點嚇人"] },
+                    { answer: "赤崁樓", clues: ["荷蘭人建", "普羅民遮城", "九座石龜", "曾是統治中心", "晚上點燈", "旁有冬瓜茶"] },
+                    { answer: "虱目魚", clues: ["台南人愛吃", "台灣第一魚", "很多細刺", "魚肚湯", "煎得金黃", "專屬博物館"] },
+                    { answer: "七股鹽山", clues: ["台南沿海", "遠看像白雪", "最大曬鹽場", "觀光園區", "爬山頂拍照", "吃鹹冰棒"] },
+                    { answer: "椪餅", clues: ["傳統糕餅", "圓澎空心", "黑糖內餡", "煎麻油雞蛋", "月子餅", "台南零食"] },
+                    { answer: "擔仔麵", clues: ["漁民挑扁擔", "油麵", "鮮蝦湯頭", "香噴肉燥", "度小月", "台南著名小吃"] },
+                    { answer: "奇美博物館", clues: ["仁德區", "西洋古典建築", "阿波羅噴泉", "藝術與動物標本", "許文龍創辦", "台南凡爾賽宮"] },
+                    { answer: "孔廟", clues: ["市中心", "第一座孔子廟", "全臺首學", "紅色建築", "祭孔大典", "百年老樹"] },
+                    { answer: "鹽水蜂炮", clues: ["元宵節活動", "沖天炮齊發", "全罩安全帽", "驅除瘟疫", "北天燈南ＯＯ", "刺激危險"] },
+                    { answer: "關子嶺溫泉", clues: ["白河區", "灰黑泉水", "泥漿溫泉", "皮膚滑溜", "吃甕仔雞", "泡湯養生"] },
+                    { answer: "碗粿", clues: ["傳統米食", "米漿蒸熟", "香菇蛋黃肉", "淋醬油膏", "麻豆最出名", "口感軟糯"] },
+                    { answer: "豆花", clues: ["黃豆甜品", "綿密軟嫩", "安平區名店", "加糖水花生", "夏冰冬熱", "牙口不好可吃"] },
+                    { answer: "芒果", clues: ["夏天水果", "玉井區產地", "愛文金煌", "黃橘色果肉", "做成冰棒果乾", "吃多會上火"] },
+                    { answer: "藍晒圖", clues: ["文創園區", "新光三越對面", "藍色牆面白線條", "舊司法宿舍改建", "拍照打卡", "3D立體藝術"] },
+                    { answer: "鱔魚意麵", clues: ["酸甜口味", "鍋氣十足", "炸過的雞蛋麵", "台南經典麵食", "勾芡濃稠", "脆彈口感"] },
+                    { answer: "四草綠色隧道", clues: ["搭竹筏", "紅樹林", "戴斗笠", "台灣亞馬遜", "天使之吻倒影", "生態導覽"] },
+                    { answer: "國華街", clues: ["台南美食一級戰區", "小卷米粉", "富盛號碗粿", "金得春捲", "假日人車爭道", "永樂市場"] }
+                ]
+            },
+            kaohsiung: {
+                name: "高雄",
+                color: "cyan",
+                questions: [
+                    { answer: "龍虎塔", clues: ["左營蓮池潭", "兩座高塔", "龍口進虎口出", "消災解厄", "觀光客必去", "九曲橋"] },
+                    { answer: "駁二藝術特區", clues: ["港口倉庫改建", "大勇大義蓬萊倉庫", "工人漁婦公仔", "輕軌經過", "文創展覽", "假日市集"] },
+                    { answer: "丹丹漢堡", clues: ["南部限定速食", "漢堡配麵線羹", "炸雞腿", "鮮脆雞腿堡", "價格親民", "點餐常排隊"] },
+                    { answer: "旗津", clues: ["搭渡輪", "吃海鮮", "黑沙灘", "吃烤魷魚", "燈塔砲台", "租電動自行車"] },
+                    { answer: "85大樓", clues: ["高雄地標", "曾是台灣最高", "造型像「高」字", "觀景台", "三多商圈", "飯店商辦"] },
+                    { answer: "美麗島站", clues: ["捷運紅橘線交會", "光之穹頂", "玻璃彩繪藝術", "全球最美捷運站之一", "祈禱意象", "六合夜市旁"] },
+                    { answer: "愛河", clues: ["流經市區", "搭愛之船", "貢多拉船", "兩岸散步", "元宵燈會", "浪漫夜景"] },
+                    { answer: "瑞豐夜市", clues: ["巨蛋站附近", "攤位超密集", "吃萬國牛排", "櫥窗滷味", "高雄在地人最愛", "L型走道"] },
+                    { answer: "澄清湖", clues: ["鳥松區", "九曲橋", "高雄第一大湖", "烤肉區", "風景區", "棒球場在旁邊"] },
+                    { answer: "衛武營", clues: ["鳳山區", "國家藝術文化中心", "最大單一屋頂劇院", "白色波浪外觀", "榕樹廣場", "巨大草地"] },
+                    { answer: "壽山", clues: ["也叫柴山", "台灣獼猴超多", "小心被搶食物", "登山步道", "忠烈祠LOVE觀景台", "俯瞰高雄港"] },
+                    { answer: "西子灣", clues: ["看夕陽絕佳地點", "中山大學", "蘿蔔坑", "吃海之冰", "打狗英國領事館", "靠近渡船頭"] },
+                    { answer: "崗山之眼", clues: ["天空回廊", "提琴頭造型", "懸索橋", "俯瞰阿公店水庫", "透明玻璃步道", "岡山區"] },
+                    { answer: "佛光山", clues: ["大樹區", "佛陀紀念館", "巨大銅鑄坐佛", "星雲大師", "宗教聖地", "農曆年煙火"] },
+                    { answer: "月世界", clues: ["田寮區", "惡地地形", "光禿禿灰白山丘", "像月球表面", "吃土雞", "泥火山"] },
+                    { answer: "大港橋", clues: ["亞洲新灣區", "旋轉橋", "帆船造型", "每天下午三點旋轉", "連接駁二與蓬萊商港", "純白橋身"] },
+                    { answer: "六合夜市", clues: ["歷史最悠久", "國際觀光客多", "海鮮攤位多", "木瓜牛奶", "買烏魚子", "道路寬敞"] },
+                    { answer: "流行音樂中心", clues: ["愛河灣", "蜂巢造型", "音浪塔", "海豚步道", "珊瑚礁群", "輕軌真愛碼頭站"] },
+                    { answer: "舊鐵橋", clues: ["大樹區", "下淡水溪鐵橋", "百年古蹟", "屏東交界", "溼地教育園區", "走在鐵軌上"] },
+                    { answer: "橋頭糖廠", clues: ["吃紅豆酵母冰", "搭五分車", "租腳踏車", "百年歷史", "日式廠長宿舍", "裝置藝術"] }
+                ]
+            },
+            pingtung: {
+                name: "屏東",
+                color: "yellow",
+                questions: [
+                    { answer: "墾丁", clues: ["南台灣度假勝地", "國家公園", "沙灘比基尼", "大街夜市", "春吶", "恆春半島"] },
+                    { answer: "鵝鑾鼻燈塔", clues: ["台灣最南端燈塔", "純白建築", "武裝燈塔", "日夜開放", "國家公園內", "觀光客必拍"] },
+                    { answer: "海生館", clues: ["車城鄉", "最大的水族館", "夜宿活動", "巨大海藻森林", "看小白鯨", "海底隧道"] },
+                    { answer: "小琉球", clues: ["搭船去", "看海龜", "珊瑚礁島", "浮潛勝地", "買麻花捲", "花瓶岩"] },
+                    { answer: "萬巒豬腳", clues: ["特製醬汁", "豬腳街", "海鴻飯店", "滷得油亮", "膠質豐富", "切塊配蒜蓉醬"] },
+                    { answer: "黑鮪魚", clues: ["東港特產", "每年5-7月盛產", "價格昂貴", "生魚片極品", "第一鮪拍賣", "入口即化"] },
+                    { answer: "潮州", clues: ["吃燒冷冰", "圓環", "牛肉福", "戲曲故事館", "歌仔戲明華園故鄉", "綠色隧道"] },
+                    { answer: "恆春古城", clues: ["保留最完整城門", "東南西北門", "電影海角七號", "阿嘉的家", "彈月琴", "搶孤"] },
+                    { answer: "大鵬灣", clues: ["跨海大橋", "潟湖地形", "蚵殼島", "賽車場", "開橋秀", "東港鎮"] },
+                    { answer: "涼山瀑布", clues: ["瑪家鄉", "爬山避暑", "瀑布群", "涼山情歌", "芬多精", "適合長輩健行"] },
+                    { answer: "雙流國家森林", clues: ["獅子鄉", "雙流瀑布", "涉水步道", "蝴蝶豐富", "森林浴", "南迴公路旁"] },
+                    { answer: "勝利星村", clues: ["屏東市", "眷村改建", "將軍之屋", "旗袍體驗", "文創小店", "獨立書店"] },
+                    { answer: "谷川大橋", clues: ["霧台鄉", "台灣最高橋墩", "莫拉克風災重建", "跨越隘寮北溪", "魯凱族圖騰", "百合花圖案"] },
+                    { answer: "車城福安宮", clues: ["最大土地公廟", "買洋蔥", "買紅仁鴨蛋", "吃綠豆蒜", "吸金爐", "香火鼎盛"] },
+                    { answer: "旭海草原", clues: ["牡丹鄉", "看日出", "滿州鄉交界", "走步道看海", "遠眺太平洋", "風景壯麗"] },
+                    { answer: "霧台", clues: ["魯凱族部落", "石板屋", "櫻花王", "吃神山愛玉", "原住民烤肉", "入山要登記"] },
+                    { answer: "南灣", clues: ["墾丁玩水", "水上摩托車", "香蕉船", "沙灘陽傘", "核三廠對面", "衝浪客多"] },
+                    { answer: "龍磐公園", clues: ["墾丁看日出", "崩崖地形", "風超級大", "沒有光害看星星", "廣闊大草原", "面對太平洋"] },
+                    { answer: "山川琉璃吊橋", clues: ["連接三地門與瑪家", "琉璃珠裝飾", "曾是全台最長", "跨越隘寮溪", "微笑曲線", "原住民文化"] },
+                    { answer: "東港迎王", clues: ["三年一次大拜拜", "燒王船", "平安祭典", "溫府千歲", "地方盛事", "百年傳統"] }
+                ]
+            },
+            yilan: {
+                name: "宜蘭",
+                color: "emerald",
+                questions: [
+                    { answer: "龜山島", clues: ["外海火山島", "搭船賞鯨", "形狀像一隻烏龜", "每日限額登島", "牛奶海", "活火山"] },
+                    { answer: "羅東夜市", clues: ["阿灶伯羊肉湯", "吃糕渣", "吃卜肉", "三星蔥肉串", "宜蘭最熱鬧夜市", "假日擠爆"] },
+                    { answer: "童玩節", clues: ["冬山河親水公園", "暑假舉辦", "玩水打水仗", "各國舞蹈表演", "宜蘭代表活動", "適合親子"] },
+                    { answer: "礁溪溫泉", clues: ["平地溫泉", "無色無味", "湯圍溝公園", "溫泉魚咬腳", "很多溫泉飯店", "搭火車就到"] },
+                    { answer: "三星蔥", clues: ["宜蘭最有名的蔥", "蔥油餅超好吃", "蔥拔體驗", "蔥明麵", "蔥綠長蔥白多", "宜蘭名產"] },
+                    { answer: "牛舌餅", clues: ["宜蘭名產", "形狀像牛的舌頭", "傳統較厚實", "宜蘭餅超薄脆", "蜂蜜口味", "伴手禮"] },
+                    { answer: "傳統藝術中心", clues: ["五結鄉", "復古老街", "霹靂布袋戲", "傳統工藝DIY", "搭船去冬山河", "適合全家"] },
+                    { answer: "太平山", clues: ["搭蹦蹦車", "鳩之澤溫泉", "見晴懷古步道", "高海拔避暑", "翠峰湖", "賞雪勝地"] },
+                    { answer: "梅花湖", clues: ["冬山鄉", "形狀像梅花", "騎協力車", "吳淡如開餐廳", "餵鴨子", "湖畔散步"] },
+                    { answer: "幾米公園", clues: ["火車站旁", "繪本人物立體化", "向左走向右走", "飛天火車", "丟丟噹森林", "拍照打卡"] },
+                    { answer: "清水地熱", clues: ["煮溫泉蛋", "煮玉米", "竹簍燙食物", "泡腳池", "假日人很多", "重新整修過"] },
+                    { answer: "蘭陽博物館", clues: ["單面山造型", "像倒塌的建築", "介紹宜蘭歷史生態", "頭城鎮", "烏石港旁", "玻璃帷幕"] },
+                    { answer: "奶凍捲", clues: ["諾貝爾與奕順軒", "草莓奶凍", "芋頭奶凍", "冰涼軟綿", "宜蘭必買甜點", "排隊名店"] },
+                    { answer: "鴨賞", clues: ["宜蘭名產", "甘蔗燻烤", "切絲拌蒜苗醋", "下酒菜", "櫻桃鴨", "鹹香夠味"] },
+                    { answer: "頭城搶孤", clues: ["農曆七月活動", "塗滿牛油的柱子", "爬上去鋸下順風旗", "祭拜好兄弟", "宗教民俗", "危險度高"] },
+                    { answer: "烏石港", clues: ["衝浪勝地", "吃海鮮", "搭船去龜山島", "黑沙灘", "外澳沙灘", "蘭陽博物館旁"] },
+                    { answer: "南方澳", clues: ["蘇澳鎮", "拜金媽祖玉媽祖", "吃海鮮大餐", "跨港大橋", "買魚貨", "三個漁港組成"] },
+                    { answer: "蘇澳冷泉", clues: ["夏天泡超涼", "碳酸冷泉", "全世界少有", "彈珠汽水", "泡了會冒泡泡", "水溫約22度"] },
+                    { answer: "綠色博覽會", clues: ["春天舉辦", "生態環保主題", "冬山河生態綠舟", "寓教於樂", "宜蘭大型活動", "武荖坑"] },
+                    { answer: "斑比山丘", clues: ["冬山鄉", "台版奈良", "餵梅花鹿", "水豚君", "買紅蘿蔔", "網美打卡點"] }
+                ]
+            }
+        };
+
+        let currentCityKey = null;
+        let activeQuestions = [];
+        let currentQ = 0;
+        let revealedIndexes = [];
+        let isShowAns = false;
+        const PROGRESS_KEY_PREFIX = 'guess_game_progress_';
+
+        // --- 音效系統 ---
+        const AudioContext = window.AudioContext || window.webkitAudioContext;
+        let audioCtx = null;
+        let isMuted = false;
+
+        function initAudio() {
+            if (!audioCtx) audioCtx = new AudioContext();
+            if (audioCtx.state === 'suspended') audioCtx.resume();
+        }
+
+        function toggleMute() {
+            isMuted = !isMuted;
+            const icon = document.getElementById('mute-icon');
+            if (isMuted) {
+                icon.setAttribute('data-lucide', 'volume-x');
+            } else {
+                icon.setAttribute('data-lucide', 'volume-2');
+                initAudio();
+                playSound('click');
+            }
+            lucide.createIcons();
+        }
+
+        function playSound(type) {
+            if (isMuted) return;
+            initAudio(); 
+            const now = audioCtx.currentTime;
+            const osc = audioCtx.createOscillator();
+            const gainNode = audioCtx.createGain();
+            osc.connect(gainNode);
+            gainNode.connect(audioCtx.destination);
+
+            switch(type) {
+                case 'start':
+                    osc.type = 'sine';
+                    osc.frequency.setValueAtTime(392.00, now);
+                    osc.frequency.exponentialRampToValueAtTime(1046.50, now + 0.4);
+                    gainNode.gain.setValueAtTime(0, now);
+                    gainNode.gain.linearRampToValueAtTime(0.2, now + 0.1);
+                    gainNode.gain.exponentialRampToValueAtTime(0.01, now + 0.5);
+                    osc.start(now); osc.stop(now + 0.5);
+                    break;
+                case 'clue':
+                    osc.type = 'sine';
+                    osc.frequency.setValueAtTime(500, now);
+                    osc.frequency.exponentialRampToValueAtTime(800, now + 0.1);
+                    gainNode.gain.setValueAtTime(0, now);
+                    gainNode.gain.linearRampToValueAtTime(0.15, now + 0.02);
+                    gainNode.gain.exponentialRampToValueAtTime(0.01, now + 0.15);
+                    osc.start(now); osc.stop(now + 0.2);
+                    break;
+                case 'answer':
+                    osc.type = 'triangle';
+                    osc.frequency.setValueAtTime(523.25, now);
+                    gainNode.gain.setValueAtTime(0, now);
+                    gainNode.gain.linearRampToValueAtTime(0.2, now + 0.05);
+                    gainNode.gain.setValueAtTime(0.2, now + 0.15);
+                    gainNode.gain.linearRampToValueAtTime(0, now + 0.2);
+                    const osc2 = audioCtx.createOscillator();
+                    const gain2 = audioCtx.createGain();
+                    osc2.type = 'triangle';
+                    osc2.connect(gain2);
+                    gain2.connect(audioCtx.destination);
+                    osc2.frequency.setValueAtTime(659.25, now + 0.2);
+                    gain2.gain.setValueAtTime(0, now + 0.2);
+                    gain2.gain.linearRampToValueAtTime(0.25, now + 0.25);
+                    gain2.gain.exponentialRampToValueAtTime(0.01, now + 1.2);
+                    osc.start(now); osc.stop(now + 0.2);
+                    osc2.start(now + 0.2); osc2.stop(now + 1.2);
+                    break;
+                case 'click':
+                    osc.type = 'sine';
+                    osc.frequency.setValueAtTime(600, now);
+                    osc.frequency.exponentialRampToValueAtTime(300, now + 0.05);
+                    gainNode.gain.setValueAtTime(0, now);
+                    gainNode.gain.linearRampToValueAtTime(0.1, now + 0.01);
+                    gainNode.gain.exponentialRampToValueAtTime(0.01, now + 0.05);
+                    osc.start(now); osc.stop(now + 0.06);
+                    break;
+            }
+        }
+
+        lucide.createIcons();
+
+        // ========== 視圖與視窗控制 ==========
+        function startGame(cityKey) {
+            initAudio(); 
+            playSound('start'); 
+            currentCityKey = cityKey;
+            activeQuestions = cityData[cityKey].questions;
+            const cityInfo = cityData[cityKey];
+
+            // 【新功能】讀取上次玩到的進度
+            const savedProgress = localStorage.getItem(PROGRESS_KEY_PREFIX + cityKey);
+            currentQ = savedProgress ? parseInt(savedProgress, 10) : 0;
+            // 確保題號不超過總題數
+            if(currentQ >= activeQuestions.length) currentQ = 0; 
+            
+            revealedIndexes = [];
+            isShowAns = false;
+
+            document.getElementById('start-screen').classList.add('hidden');
+            document.getElementById('start-screen').classList.remove('flex');
+            document.getElementById('game-screen').classList.remove('hidden');
+            document.getElementById('game-screen').classList.add('flex');
+            
+            document.getElementById('mode-badge').textContent = cityInfo.name;
+            
+            renderGame();
+        }
+
+        function returnToHome() {
+            playSound('click');
+            // 【修正】移除煩人的確認視窗，直接讓玩家回首頁
+            currentCityKey = null;
+            activeQuestions = [];
+            revealedIndexes = [];
+            isShowAns = false;
+            
+            document.getElementById('game-screen').classList.add('hidden');
+            document.getElementById('game-screen').classList.remove('flex');
+            document.getElementById('start-screen').classList.remove('hidden');
+            document.getElementById('start-screen').classList.add('flex');
+        }
+
+        function openClueModal(clueText, index) {
+            const modal = document.getElementById('clue-modal');
+            const textEl = document.getElementById('clue-modal-text');
+            
+            textEl.innerHTML = `<span class="text-indigo-500 mr-2 text-3xl sm:text-5xl border-b-4 border-indigo-500 pb-1">#${index + 1}</span><br/><span class="block mt-4">${clueText}</span>`;
+            
+            modal.classList.remove('hidden');
+            modal.classList.add('flex');
+        }
+
+        function closeClueModal() {
+            const modal = document.getElementById('clue-modal');
+            playSound('click');
+            modal.classList.add('hidden');
+            modal.classList.remove('flex');
+        }
+
+        // ========== 遊戲邏輯與渲染 ==========
+        function renderGame() {
+            const q = activeQuestions[currentQ];
+            const currentClues = q.clues;
+
+            document.getElementById('question-title').textContent = `第 ${currentQ + 1} 題`;
+            document.getElementById('progress-text').textContent = `${currentQ + 1} / ${activeQuestions.length}`;
+            document.getElementById('revealed-count').textContent = revealedIndexes.length;
+
+            const cluesHtml = currentClues.map((clue, idx) => {
+                const isRevealed = revealedIndexes.includes(idx);
+                const baseClasses = "w-full h-full rounded-2xl sm:rounded-3xl flex items-center justify-center p-3 sm:p-6 transition-all duration-200 cursor-pointer text-center";
+                
+                const stateClasses = isRevealed
+                    ? "bg-white border-4 sm:border-[6px] border-indigo-500 shadow-[4px_4px_0px_rgba(79,70,229,1)] translate-x-[-2px] translate-y-[-2px]"
+                    : "bg-slate-200 border-4 sm:border-[6px] border-dashed border-slate-400 hover:bg-slate-300 active:bg-slate-400";
+                
+                const content = isRevealed
+                    ? `<span class="text-2xl sm:text-4xl lg:text-5xl font-black text-slate-900 leading-tight tracking-wide pointer-events-none">${clue}</span>`
+                    : `<span class="text-[5rem] sm:text-[8rem] font-black text-slate-400 opacity-60 pointer-events-none leading-none">?</span>`;
+
+                return `<div onclick="revealSpecificClue(${idx})" class="${baseClasses} ${stateClasses}">${content}</div>`;
+            }).join('');
+            
+            document.getElementById('clues-grid').innerHTML = cluesHtml;
+
+            const ansContainer = document.getElementById('answer-container');
+            const ansTextEl = document.getElementById('answer-text');
+
+            if (isShowAns) {
+                ansTextEl.textContent = q.answer;
+                ansContainer.classList.remove('opacity-0', 'pointer-events-none', 'scale-95');
+                ansContainer.classList.add('opacity-100', 'pointer-events-auto', 'scale-100');
+            } else {
+                ansContainer.classList.remove('opacity-100', 'pointer-events-auto', 'scale-100');
+                ansContainer.classList.add('opacity-0', 'pointer-events-none', 'scale-95');
+                setTimeout(() => { if(!isShowAns) ansTextEl.textContent = ''; }, 300);
+            }
+
+            document.getElementById('btn-prev').disabled = currentQ === 0;
+            document.getElementById('btn-next').disabled = currentQ === activeQuestions.length - 1;
+            document.getElementById('btn-open-clue').disabled = revealedIndexes.length >= 6 || isShowAns;
+            document.getElementById('btn-show-ans').disabled = isShowAns;
+        }
+
+        // ========== 互動操作 ==========
+        function nextClue() {
+            if (isShowAns || revealedIndexes.length >= 6) return;
+            const q = activeQuestions[currentQ];
+            const currentClues = q.clues;
+            
+            let openedIdx = -1;
+            for (let i = 0; i < 6; i++) {
+                if (!revealedIndexes.includes(i)) {
+                    revealedIndexes.push(i);
+                    openedIdx = i;
+                    break;
+                }
+            }
+            if(openedIdx !== -1) {
+                playSound('clue');
+                renderGame();
+                openClueModal(currentClues[openedIdx], openedIdx);
+            }
+        }
+
+        function revealSpecificClue(idx) {
+            const q = activeQuestions[currentQ];
+            const currentClues = q.clues;
+
+            if (!isShowAns) {
+                if (!revealedIndexes.includes(idx)) {
+                    revealedIndexes.push(idx);
+                    playSound('clue');
+                    renderGame();
+                    openClueModal(currentClues[idx], idx);
+                } else {
+                    playSound('click');
+                    openClueModal(currentClues[idx], idx);
+                }
+            }
+        }
+
+        function showAnswer() {
+            if (!isShowAns) {
+                isShowAns = true;
+                playSound('answer');
+                renderGame();
+            }
+        }
+
+        function changeQuestion(dir) {
+            let newQ = currentQ + dir;
+            if (newQ >= 0 && newQ < activeQuestions.length) {
+                currentQ = newQ;
+                revealedIndexes = [];
+                isShowAns = false;
+                
+                // 【新功能】跳轉題目的時候，自動記錄目前的進度
+                localStorage.setItem(PROGRESS_KEY_PREFIX + currentCityKey, currentQ);
+                
+                playSound('click');
+                renderGame();
+            }
+        }
+    </script>
+</body>
+</html>
