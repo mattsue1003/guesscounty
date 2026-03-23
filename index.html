@@ -58,6 +58,15 @@
             border-bottom-width: 2px;
             transform: translateY(4px);
         }
+
+        /* 隱藏預設捲軸 (針對首頁) */
+        .hide-scrollbar::-webkit-scrollbar {
+            display: none;
+        }
+        .hide-scrollbar {
+            -ms-overflow-style: none;
+            scrollbar-width: none;
+        }
     </style>
 </head>
 <!-- 電腦版深色背景，凸顯中間的遊戲視窗 -->
@@ -67,51 +76,52 @@
     <div class="app-wrapper">
         
         <!-- ==================== 開始畫面 ==================== -->
-        <div id="start-screen" class="flex flex-col h-full w-full p-4 sm:p-8 bg-slate-100">
+        <!-- 修改點：加入 overflow-y-auto 與 hide-scrollbar 解決小手機被截斷問題 -->
+        <div id="start-screen" class="flex flex-col h-full w-full p-4 sm:p-8 bg-slate-100 overflow-y-auto hide-scrollbar">
             
             <!-- 標題區 -->
-            <div class="shrink-0 flex flex-col items-center justify-center mb-4 sm:mb-8 pt-2 sm:pt-4">
-                <div class="flex items-center gap-3 sm:gap-6 mb-2">
-                    <i data-lucide="map" class="w-12 h-12 sm:w-16 sm:h-16 text-indigo-600"></i>
+            <div class="shrink-0 flex flex-col items-center justify-center mb-6 sm:mb-8 pt-4 sm:pt-4">
+                <div class="flex items-center gap-3 sm:gap-6 mb-3">
+                    <i data-lucide="map" class="w-10 h-10 sm:w-16 sm:h-16 text-indigo-600"></i>
                     <h1 class="text-4xl sm:text-5xl md:text-6xl font-black text-slate-900 tracking-wider">猜猜我是誰</h1>
                 </div>
-                <p class="text-slate-600 text-xl sm:text-2xl font-bold bg-slate-200 px-6 py-2 rounded-full border-2 border-slate-300">請選擇挑戰的縣市</p>
+                <p class="text-slate-600 text-lg sm:text-2xl font-bold bg-slate-200 px-5 py-2 rounded-full border-2 border-slate-300">請選擇挑戰的縣市</p>
             </div>
             
-            <!-- 縣市按鈕網格 -->
-            <div class="flex-1 min-h-0 w-full max-w-5xl mx-auto pb-4">
-                <div class="grid grid-cols-2 sm:grid-cols-4 gap-3 sm:gap-5 h-full">
-                    <button onclick="startGame('taipei')" class="flex flex-col items-center justify-center bg-white border-4 border-slate-300 rounded-2xl hover:bg-blue-50 hover:border-blue-500 btn-3d active:border-blue-500">
+            <!-- 縣市按鈕網格 (手機板 2 欄位，適應內容) -->
+            <div class="flex-1 w-full max-w-5xl mx-auto pb-8">
+                <div class="grid grid-cols-2 sm:grid-cols-4 gap-3 sm:gap-5 h-full min-h-min">
+                    <button onclick="startGame('taipei')" class="flex flex-col items-center justify-center py-4 sm:py-0 bg-white border-4 border-slate-300 rounded-2xl hover:bg-blue-50 hover:border-blue-500 btn-3d active:border-blue-500">
                         <i data-lucide="building-2" class="w-10 h-10 sm:w-14 sm:h-14 text-blue-600 mb-2 sm:mb-4"></i>
-                        <h3 class="text-3xl sm:text-4xl font-black text-slate-800">台北</h3>
+                        <h3 class="text-2xl sm:text-4xl font-black text-slate-800">台北</h3>
                     </button>
-                    <button onclick="startGame('new_taipei')" class="flex flex-col items-center justify-center bg-white border-4 border-slate-300 rounded-2xl hover:bg-indigo-50 hover:border-indigo-500 btn-3d active:border-indigo-500">
+                    <button onclick="startGame('new_taipei')" class="flex flex-col items-center justify-center py-4 sm:py-0 bg-white border-4 border-slate-300 rounded-2xl hover:bg-indigo-50 hover:border-indigo-500 btn-3d active:border-indigo-500">
                         <i data-lucide="train" class="w-10 h-10 sm:w-14 sm:h-14 text-indigo-600 mb-2 sm:mb-4"></i>
-                        <h3 class="text-3xl sm:text-4xl font-black text-slate-800">新北</h3>
+                        <h3 class="text-2xl sm:text-4xl font-black text-slate-800">新北</h3>
                     </button>
-                    <button onclick="startGame('taoyuan')" class="flex flex-col items-center justify-center bg-white border-4 border-slate-300 rounded-2xl hover:bg-sky-50 hover:border-sky-500 btn-3d active:border-sky-500">
+                    <button onclick="startGame('taoyuan')" class="flex flex-col items-center justify-center py-4 sm:py-0 bg-white border-4 border-slate-300 rounded-2xl hover:bg-sky-50 hover:border-sky-500 btn-3d active:border-sky-500">
                         <i data-lucide="plane" class="w-10 h-10 sm:w-14 sm:h-14 text-sky-600 mb-2 sm:mb-4"></i>
-                        <h3 class="text-3xl sm:text-4xl font-black text-slate-800">桃園</h3>
+                        <h3 class="text-2xl sm:text-4xl font-black text-slate-800">桃園</h3>
                     </button>
-                    <button onclick="startGame('taichung')" class="flex flex-col items-center justify-center bg-white border-4 border-slate-300 rounded-2xl hover:bg-orange-50 hover:border-orange-500 btn-3d active:border-orange-500">
+                    <button onclick="startGame('taichung')" class="flex flex-col items-center justify-center py-4 sm:py-0 bg-white border-4 border-slate-300 rounded-2xl hover:bg-orange-50 hover:border-orange-500 btn-3d active:border-orange-500">
                         <i data-lucide="sun" class="w-10 h-10 sm:w-14 sm:h-14 text-orange-600 mb-2 sm:mb-4"></i>
-                        <h3 class="text-3xl sm:text-4xl font-black text-slate-800">台中</h3>
+                        <h3 class="text-2xl sm:text-4xl font-black text-slate-800">台中</h3>
                     </button>
-                    <button onclick="startGame('tainan')" class="flex flex-col items-center justify-center bg-white border-4 border-slate-300 rounded-2xl hover:bg-red-50 hover:border-red-500 btn-3d active:border-red-500">
+                    <button onclick="startGame('tainan')" class="flex flex-col items-center justify-center py-4 sm:py-0 bg-white border-4 border-slate-300 rounded-2xl hover:bg-red-50 hover:border-red-500 btn-3d active:border-red-500">
                         <i data-lucide="utensils" class="w-10 h-10 sm:w-14 sm:h-14 text-red-600 mb-2 sm:mb-4"></i>
-                        <h3 class="text-3xl sm:text-4xl font-black text-slate-800">台南</h3>
+                        <h3 class="text-2xl sm:text-4xl font-black text-slate-800">台南</h3>
                     </button>
-                    <button onclick="startGame('kaohsiung')" class="flex flex-col items-center justify-center bg-white border-4 border-slate-300 rounded-2xl hover:bg-cyan-50 hover:border-cyan-500 btn-3d active:border-cyan-500">
+                    <button onclick="startGame('kaohsiung')" class="flex flex-col items-center justify-center py-4 sm:py-0 bg-white border-4 border-slate-300 rounded-2xl hover:bg-cyan-50 hover:border-cyan-500 btn-3d active:border-cyan-500">
                         <i data-lucide="ship" class="w-10 h-10 sm:w-14 sm:h-14 text-cyan-600 mb-2 sm:mb-4"></i>
-                        <h3 class="text-3xl sm:text-4xl font-black text-slate-800">高雄</h3>
+                        <h3 class="text-2xl sm:text-4xl font-black text-slate-800">高雄</h3>
                     </button>
-                    <button onclick="startGame('pingtung')" class="flex flex-col items-center justify-center bg-white border-4 border-slate-300 rounded-2xl hover:bg-yellow-50 hover:border-yellow-500 btn-3d active:border-yellow-500">
+                    <button onclick="startGame('pingtung')" class="flex flex-col items-center justify-center py-4 sm:py-0 bg-white border-4 border-slate-300 rounded-2xl hover:bg-yellow-50 hover:border-yellow-500 btn-3d active:border-yellow-500">
                         <i data-lucide="palmtree" class="w-10 h-10 sm:w-14 sm:h-14 text-yellow-600 mb-2 sm:mb-4"></i>
-                        <h3 class="text-3xl sm:text-4xl font-black text-slate-800">屏東</h3>
+                        <h3 class="text-2xl sm:text-4xl font-black text-slate-800">屏東</h3>
                     </button>
-                    <button onclick="startGame('yilan')" class="flex flex-col items-center justify-center bg-white border-4 border-slate-300 rounded-2xl hover:bg-emerald-50 hover:border-emerald-500 btn-3d active:border-emerald-500">
+                    <button onclick="startGame('yilan')" class="flex flex-col items-center justify-center py-4 sm:py-0 bg-white border-4 border-slate-300 rounded-2xl hover:bg-emerald-50 hover:border-emerald-500 btn-3d active:border-emerald-500">
                         <i data-lucide="tent" class="w-10 h-10 sm:w-14 sm:h-14 text-emerald-600 mb-2 sm:mb-4"></i>
-                        <h3 class="text-3xl sm:text-4xl font-black text-slate-800">宜蘭</h3>
+                        <h3 class="text-2xl sm:text-4xl font-black text-slate-800">宜蘭</h3>
                     </button>
                 </div>
             </div>
@@ -121,55 +131,57 @@
         <div id="game-screen" class="hidden flex-col h-full w-full bg-slate-100 relative">
             
             <!-- 頂部導覽列 -->
-            <header class="h-16 sm:h-20 bg-slate-800 text-white flex items-center justify-between px-3 sm:px-6 shrink-0 z-20 shadow-md">
-                <div class="flex items-center gap-3">
-                    <button onclick="returnToHome()" class="p-2 sm:p-3 bg-slate-700 hover:bg-slate-600 rounded-xl transition-colors border-2 border-slate-600 active:bg-slate-500 cursor-pointer">
-                        <i data-lucide="home" class="w-6 h-6 sm:w-8 sm:h-8"></i>
+            <header class="h-14 sm:h-20 bg-slate-800 text-white flex items-center justify-between px-3 sm:px-6 shrink-0 z-20 shadow-md">
+                <div class="flex items-center gap-2 sm:gap-3">
+                    <button onclick="returnToHome()" class="p-2 sm:p-3 bg-slate-700 hover:bg-slate-600 rounded-lg sm:rounded-xl transition-colors border-2 border-slate-600 active:bg-slate-500 cursor-pointer">
+                        <i data-lucide="home" class="w-5 h-5 sm:w-8 sm:h-8"></i>
                     </button>
                     <div class="hidden sm:flex items-center gap-3 ml-2">
                         <span id="mode-badge" class="px-4 py-1 rounded-full font-black text-lg border-2 bg-slate-100 text-slate-900 border-slate-400">主題</span>
                     </div>
                 </div>
                 
-                <h2 class="text-2xl sm:text-3xl md:text-4xl font-black tracking-widest absolute left-1/2 -translate-x-1/2">猜猜我是誰</h2>
+                <!-- 修改點：讓標題在手機板縮小並避免被擠壓 -->
+                <h2 class="text-lg sm:text-3xl md:text-4xl font-black tracking-widest absolute left-1/2 -translate-x-1/2 w-max">猜猜我是誰</h2>
                 
                 <div class="flex items-center gap-2 sm:gap-4">
-                    <div class="bg-slate-900 px-3 sm:px-5 py-1 sm:py-2 rounded-full border-2 border-slate-600 font-bold text-lg sm:text-xl">
+                    <div class="bg-slate-900 px-3 sm:px-5 py-1 sm:py-2 rounded-full border-2 border-slate-600 font-bold text-sm sm:text-xl">
                         <span id="progress-text">1/20</span>
                     </div>
-                    <button onclick="toggleMute()" id="btn-mute" class="p-2 sm:p-3 bg-slate-700 hover:bg-slate-600 rounded-xl transition-colors border-2 border-slate-600">
-                        <i data-lucide="volume-2" id="mute-icon" class="w-6 h-6 sm:w-8 sm:h-8"></i>
+                    <button onclick="toggleMute()" id="btn-mute" class="p-2 sm:p-3 bg-slate-700 hover:bg-slate-600 rounded-lg sm:rounded-xl transition-colors border-2 border-slate-600">
+                        <i data-lucide="volume-2" id="mute-icon" class="w-5 h-5 sm:w-8 sm:h-8"></i>
                     </button>
                 </div>
             </header>
 
             <!-- 畫面主體 -->
-            <main class="flex-1 flex flex-col min-h-0 p-3 sm:p-6 pb-0 max-w-6xl mx-auto w-full">
+            <main class="flex-1 flex flex-col min-h-0 p-2 sm:p-6 pb-0 max-w-6xl mx-auto w-full">
                 
                 <!-- 題目狀態 -->
-                <div class="flex justify-between items-end mb-3 sm:mb-4 shrink-0 px-1 sm:px-2">
-                    <h2 id="question-title" class="text-4xl sm:text-5xl font-black text-slate-900 border-b-4 border-slate-400 pb-1">第 1 題</h2>
-                    <div class="text-xl sm:text-2xl font-bold text-slate-700 bg-white px-4 py-1.5 sm:py-2 rounded-xl border-4 border-slate-300 shadow-sm flex items-center gap-2">
-                        <span>已開提示:</span>
-                        <span id="revealed-count" class="text-indigo-600 text-3xl sm:text-4xl font-black">0</span>
+                <div class="flex justify-between items-end mb-2 sm:mb-4 shrink-0 px-1 sm:px-2">
+                    <h2 id="question-title" class="text-3xl sm:text-5xl font-black text-slate-900 border-b-4 border-slate-400 pb-1">第 1 題</h2>
+                    <div class="text-base sm:text-2xl font-bold text-slate-700 bg-white px-3 sm:px-4 py-1 sm:py-2 rounded-xl border-2 sm:border-4 border-slate-300 shadow-sm flex items-center gap-1 sm:gap-2">
+                        <span class="hidden sm:inline">已開提示:</span>
+                        <span class="sm:hidden">提示:</span>
+                        <span id="revealed-count" class="text-indigo-600 text-2xl sm:text-4xl font-black">0</span>
                         <span>/ 6</span>
                     </div>
                 </div>
 
                 <!-- 九宮格提示區 -->
-                <div class="flex-1 min-h-0 relative mb-3 sm:mb-6">
-                    <div id="clues-grid" class="absolute inset-0 grid grid-cols-2 sm:grid-cols-3 grid-rows-3 sm:grid-rows-2 gap-3 sm:gap-5">
+                <div class="flex-1 min-h-0 relative mb-2 sm:mb-6">
+                    <div id="clues-grid" class="absolute inset-0 grid grid-cols-2 sm:grid-cols-3 grid-rows-3 sm:grid-rows-2 gap-2 sm:gap-5">
                         <!-- 動態插入 -->
                     </div>
 
                     <!-- 答案揭曉 -->
-                    <div id="answer-container" class="absolute inset-0 bg-white border-[12px] border-emerald-500 rounded-[2rem] flex flex-col items-center justify-center z-10 opacity-0 pointer-events-none transition-all duration-300 shadow-2xl scale-95">
-                        <div class="bg-emerald-100 text-emerald-800 font-black text-2xl sm:text-3xl px-8 py-2 rounded-full mb-4 sm:mb-8 border-4 border-emerald-300">🎉 正確答案 🎉</div>
-                        <div id="answer-text" class="text-5xl sm:text-[6rem] md:text-[8rem] font-black text-slate-900 tracking-wider text-center leading-tight px-4 drop-shadow-md"></div>
+                    <div id="answer-container" class="absolute inset-0 bg-white border-[6px] sm:border-[12px] border-emerald-500 rounded-[1.5rem] sm:rounded-[2rem] flex flex-col items-center justify-center z-10 opacity-0 pointer-events-none transition-all duration-300 shadow-2xl scale-95 px-2">
+                        <div class="bg-emerald-100 text-emerald-800 font-black text-xl sm:text-3xl px-6 sm:px-8 py-2 rounded-full mb-4 sm:mb-8 border-2 sm:border-4 border-emerald-300">🎉 正確答案 🎉</div>
+                        <!-- 修改點：確保超長文字在手機板可以自動縮小或換行 -->
+                        <div id="answer-text" class="text-4xl sm:text-[6rem] md:text-[8rem] font-black text-slate-900 tracking-wider text-center leading-tight drop-shadow-md break-words max-w-full"></div>
                         
-                        <!-- 修改：改為觸發內建圖片輪播的按鈕 -->
-                        <button id="search-image-btn" onclick="openImageSlider()" class="mt-8 sm:mt-12 bg-sky-500 hover:bg-sky-400 text-white font-black py-3 px-6 sm:py-4 sm:px-8 rounded-2xl text-xl sm:text-3xl shadow-lg transition-all flex items-center gap-2 sm:gap-3 btn-3d border-sky-700">
-                            <i data-lucide="images" class="w-6 h-6 sm:w-8 sm:h-8"></i>
+                        <button id="search-image-btn" onclick="openImageSlider()" class="mt-6 sm:mt-12 bg-sky-500 hover:bg-sky-400 text-white font-black py-2 px-4 sm:py-4 sm:px-8 rounded-xl sm:rounded-2xl text-base sm:text-3xl shadow-lg transition-all flex items-center gap-2 sm:gap-3 btn-3d border-sky-700">
+                            <i data-lucide="images" class="w-5 h-5 sm:w-8 sm:h-8"></i>
                             看圖片 (可左右滑動)
                         </button>
                     </div>
@@ -178,76 +190,72 @@
             </main>
 
             <!-- 底部控制列 -->
-            <div class="h-[90px] sm:h-[110px] shrink-0 bg-slate-800 border-t-4 border-slate-900 grid grid-cols-4 gap-2 sm:gap-5 p-3 sm:p-5 pb-safe z-20">
-                <button id="btn-prev" onclick="changeQuestion(-1)" class="btn-3d flex flex-col sm:flex-row items-center justify-center gap-1 sm:gap-2 bg-slate-200 text-slate-800 border-slate-400 rounded-xl sm:rounded-2xl font-black text-lg sm:text-2xl">
-                    <i data-lucide="chevron-left" class="w-7 h-7 sm:w-10 sm:h-10"></i>
-                    <span class="hidden sm:inline">上一題</span>
+            <!-- 修改點：手機板自動轉為垂直排列 (圖在上、字在下)，避免文字被截斷 -->
+            <div class="shrink-0 bg-slate-800 border-t-4 border-slate-900 grid grid-cols-4 gap-2 sm:gap-5 p-2 sm:p-5 pb-safe z-20">
+                <button id="btn-prev" onclick="changeQuestion(-1)" class="btn-3d flex flex-col sm:flex-row items-center justify-center gap-1 sm:gap-2 bg-slate-200 text-slate-800 border-slate-400 rounded-lg sm:rounded-2xl font-bold sm:font-black text-sm sm:text-2xl py-2 sm:py-4">
+                    <i data-lucide="chevron-left" class="w-6 h-6 sm:w-10 sm:h-10"></i>
+                    <span class="leading-none">上一題</span>
                 </button>
-                <button id="btn-next" onclick="changeQuestion(1)" class="btn-3d flex flex-col sm:flex-row items-center justify-center gap-1 sm:gap-2 bg-slate-200 text-slate-800 border-slate-400 rounded-xl sm:rounded-2xl font-black text-lg sm:text-2xl">
+                <button id="btn-next" onclick="changeQuestion(1)" class="btn-3d flex flex-col sm:flex-row items-center justify-center gap-1 sm:gap-2 bg-slate-200 text-slate-800 border-slate-400 rounded-lg sm:rounded-2xl font-bold sm:font-black text-sm sm:text-2xl py-2 sm:py-4">
                     <span class="hidden sm:inline">下一題</span>
-                    <i data-lucide="chevron-right" class="w-7 h-7 sm:w-10 sm:h-10"></i>
+                    <i data-lucide="chevron-right" class="w-6 h-6 sm:w-10 sm:h-10 sm:hidden"></i>
+                    <span class="sm:hidden leading-none">下一題</span>
+                    <i data-lucide="chevron-right" class="w-6 h-6 sm:w-10 sm:h-10 hidden sm:inline"></i>
                 </button>
-                <button id="btn-open-clue" onclick="nextClue()" class="btn-3d flex flex-col sm:flex-row items-center justify-center gap-1 sm:gap-2 bg-indigo-600 text-white border-indigo-900 rounded-xl sm:rounded-2xl font-black text-xl sm:text-3xl">
-                    <i data-lucide="search" class="w-7 h-7 sm:w-10 sm:h-10"></i>
-                    <span>開提示</span>
+                <button id="btn-open-clue" onclick="nextClue()" class="btn-3d flex flex-col sm:flex-row items-center justify-center gap-1 sm:gap-2 bg-indigo-600 text-white border-indigo-900 rounded-lg sm:rounded-2xl font-bold sm:font-black text-sm sm:text-3xl py-2 sm:py-4">
+                    <i data-lucide="search" class="w-6 h-6 sm:w-10 sm:h-10"></i>
+                    <span class="leading-none">開提示</span>
                 </button>
-                <button id="btn-show-ans" onclick="showAnswer()" class="btn-3d flex flex-col sm:flex-row items-center justify-center gap-1 sm:gap-2 bg-rose-600 text-white border-rose-900 rounded-xl sm:rounded-2xl font-black text-xl sm:text-3xl">
-                    <i data-lucide="eye" class="w-7 h-7 sm:w-10 sm:h-10"></i>
-                    <span>看答案</span>
+                <button id="btn-show-ans" onclick="showAnswer()" class="btn-3d flex flex-col sm:flex-row items-center justify-center gap-1 sm:gap-2 bg-rose-600 text-white border-rose-900 rounded-lg sm:rounded-2xl font-bold sm:font-black text-sm sm:text-3xl py-2 sm:py-4">
+                    <i data-lucide="eye" class="w-6 h-6 sm:w-10 sm:h-10"></i>
+                    <span class="leading-none">看答案</span>
                 </button>
             </div>
         </div>
 
         <!-- ==================== 提示放大視窗 (Modal) ==================== -->
-        <div id="clue-modal" class="hidden fixed inset-0 z-50 bg-slate-900/80 backdrop-blur-sm flex-col items-center justify-center p-6 cursor-pointer" onclick="closeClueModal()">
-            <div id="clue-modal-content" class="bg-white rounded-[2rem] border-[10px] border-indigo-500 p-8 sm:p-12 max-w-3xl w-full text-center shadow-2xl">
-                <p id="clue-modal-text" class="text-4xl sm:text-5xl md:text-[4rem] font-black text-slate-900 leading-tight tracking-wide"></p>
-                <div class="mt-10 sm:mt-16 inline-flex items-center gap-2 bg-slate-200 text-slate-600 font-bold px-6 py-3 rounded-full text-xl border-2 border-slate-300">
-                    <i data-lucide="mouse-pointer-click" class="w-6 h-6"></i> 點擊畫面任意處關閉
+        <div id="clue-modal" class="hidden fixed inset-0 z-50 bg-slate-900/80 backdrop-blur-sm flex-col items-center justify-center p-4 sm:p-6 cursor-pointer" onclick="closeClueModal()">
+            <div id="clue-modal-content" class="bg-white rounded-[1.5rem] sm:rounded-[2rem] border-[6px] sm:border-[10px] border-indigo-500 p-6 sm:p-12 max-w-3xl w-full text-center shadow-2xl">
+                <p id="clue-modal-text" class="text-2xl sm:text-5xl md:text-[4rem] font-black text-slate-900 leading-tight tracking-wide"></p>
+                <div class="mt-8 sm:mt-16 inline-flex items-center gap-2 bg-slate-200 text-slate-600 font-bold px-4 sm:px-6 py-2 sm:py-3 rounded-full text-base sm:text-xl border-2 border-slate-300">
+                    <i data-lucide="mouse-pointer-click" class="w-5 h-5 sm:w-6 sm:h-6"></i> 輕觸畫面關閉
                 </div>
             </div>
         </div>
 
         <!-- ==================== 圖片輪播視窗 (Modal) ==================== -->
         <div id="image-slider-modal" class="hidden fixed inset-0 z-50 bg-slate-900/95 backdrop-blur-md flex-col items-center justify-center p-2 sm:p-6">
-            <!-- 頂部控制列 -->
             <div class="absolute top-4 right-4 sm:top-8 sm:right-8 z-50">
-                <button onclick="closeImageSlider()" class="bg-white/20 hover:bg-white/40 text-white p-3 rounded-full backdrop-blur-sm transition-colors cursor-pointer">
-                    <i data-lucide="x" class="w-8 h-8"></i>
+                <button onclick="closeImageSlider()" class="bg-white/20 hover:bg-white/40 text-white p-2 sm:p-3 rounded-full backdrop-blur-sm transition-colors cursor-pointer">
+                    <i data-lucide="x" class="w-6 h-6 sm:w-8 sm:h-8"></i>
                 </button>
             </div>
             
-            <h3 id="image-slider-title" class="absolute top-6 left-6 sm:top-8 sm:left-8 text-white font-black text-2xl sm:text-4xl drop-shadow-lg z-50"></h3>
+            <h3 id="image-slider-title" class="absolute top-5 left-4 sm:top-8 sm:left-8 text-white font-black text-xl sm:text-4xl drop-shadow-lg z-50"></h3>
 
-            <!-- 圖片展示區 -->
-            <div id="image-slider-content" class="relative w-full max-w-5xl h-[70vh] flex items-center justify-center select-none touch-pan-y mt-12 sm:mt-0">
-                <!-- 載入中動畫 -->
+            <div id="image-slider-content" class="relative w-full max-w-5xl h-[70vh] flex items-center justify-center select-none touch-pan-y mt-12 sm:mt-0 px-2">
                 <div id="image-loading" class="hidden flex-col items-center justify-center text-white">
-                    <i data-lucide="loader-2" class="w-16 h-16 animate-spin mb-4"></i>
-                    <span class="text-2xl font-bold tracking-widest">尋找相片中...</span>
+                    <i data-lucide="loader-2" class="w-12 h-12 sm:w-16 sm:h-16 animate-spin mb-4"></i>
+                    <span class="text-xl sm:text-2xl font-bold tracking-widest">尋找相片中...</span>
                 </div>
                 
-                <!-- 圖片本體 -->
-                <img id="slider-image" src="" alt="相關圖片" class="hidden max-w-full max-h-full object-contain rounded-2xl shadow-2xl pointer-events-none" />
+                <img id="slider-image" src="" alt="相關圖片" class="hidden max-w-full max-h-full object-contain rounded-xl sm:rounded-2xl shadow-2xl pointer-events-none" />
                 
-                <!-- 找不到圖片的提示 -->
-                <div id="image-error" class="hidden flex-col items-center justify-center text-slate-400">
-                    <i data-lucide="image-off" class="w-20 h-20 mb-4 opacity-50"></i>
-                    <span class="text-2xl font-bold">目前找不到這題的相片哦！</span>
+                <div id="image-error" class="hidden flex-col items-center justify-center text-slate-400 text-center px-4">
+                    <i data-lucide="image-off" class="w-16 h-16 sm:w-20 sm:h-20 mb-4 opacity-50"></i>
+                    <span class="text-xl sm:text-2xl font-bold">目前找不到這題的相片哦！</span>
                 </div>
 
-                <!-- 左右控制按鈕 (電腦版點擊用) -->
-                <button id="slider-prev-btn" onclick="prevImage(event)" class="absolute left-2 sm:-left-12 top-1/2 -translate-y-1/2 bg-black/60 hover:bg-black/80 text-white p-4 rounded-full backdrop-blur-sm transition-colors z-10 hidden cursor-pointer">
-                    <i data-lucide="chevron-left" class="w-8 h-8 sm:w-10 sm:h-10"></i>
+                <button id="slider-prev-btn" onclick="prevImage(event)" class="absolute left-0 sm:-left-12 top-1/2 -translate-y-1/2 bg-black/60 hover:bg-black/80 text-white p-3 sm:p-4 rounded-full backdrop-blur-sm transition-colors z-10 hidden cursor-pointer">
+                    <i data-lucide="chevron-left" class="w-6 h-6 sm:w-10 sm:h-10"></i>
                 </button>
-                <button id="slider-next-btn" onclick="nextImage(event)" class="absolute right-2 sm:-right-12 top-1/2 -translate-y-1/2 bg-black/60 hover:bg-black/80 text-white p-4 rounded-full backdrop-blur-sm transition-colors z-10 hidden cursor-pointer">
-                    <i data-lucide="chevron-right" class="w-8 h-8 sm:w-10 sm:h-10"></i>
+                <button id="slider-next-btn" onclick="nextImage(event)" class="absolute right-0 sm:-right-12 top-1/2 -translate-y-1/2 bg-black/60 hover:bg-black/80 text-white p-3 sm:p-4 rounded-full backdrop-blur-sm transition-colors z-10 hidden cursor-pointer">
+                    <i data-lucide="chevron-right" class="w-6 h-6 sm:w-10 sm:h-10"></i>
                 </button>
             </div>
 
-            <!-- 底部進度指示 -->
-            <div class="absolute bottom-8 left-1/2 -translate-x-1/2 bg-black/60 px-6 py-2 rounded-full backdrop-blur-sm">
-                <span id="slider-counter" class="text-white font-bold text-xl tracking-widest">1 / 1</span>
+            <div class="absolute bottom-6 sm:bottom-8 left-1/2 -translate-x-1/2 bg-black/60 px-5 py-2 rounded-full backdrop-blur-sm">
+                <span id="slider-counter" class="text-white font-bold text-lg sm:text-xl tracking-widest">1 / 1</span>
             </div>
         </div>
 
@@ -571,10 +579,8 @@
             activeQuestions = cityData[cityKey].questions;
             const cityInfo = cityData[cityKey];
 
-            // 【新功能】讀取上次玩到的進度
             const savedProgress = localStorage.getItem(PROGRESS_KEY_PREFIX + cityKey);
             currentQ = savedProgress ? parseInt(savedProgress, 10) : 0;
-            // 確保題號不超過總題數
             if(currentQ >= activeQuestions.length) currentQ = 0; 
             
             revealedIndexes = [];
@@ -592,7 +598,6 @@
 
         function returnToHome() {
             playSound('click');
-            // 【修正】移除煩人的確認視窗，直接讓玩家回首頁
             currentCityKey = null;
             activeQuestions = [];
             revealedIndexes = [];
@@ -632,15 +637,17 @@
 
             const cluesHtml = currentClues.map((clue, idx) => {
                 const isRevealed = revealedIndexes.includes(idx);
-                const baseClasses = "w-full h-full rounded-2xl sm:rounded-3xl flex items-center justify-center p-3 sm:p-6 transition-all duration-200 cursor-pointer text-center";
+                // 修正點：手機版內距調小，避免擠壓
+                const baseClasses = "w-full h-full rounded-xl sm:rounded-3xl flex items-center justify-center p-2 sm:p-6 transition-all duration-200 cursor-pointer text-center";
                 
                 const stateClasses = isRevealed
-                    ? "bg-white border-4 sm:border-[6px] border-indigo-500 shadow-[4px_4px_0px_rgba(79,70,229,1)] translate-x-[-2px] translate-y-[-2px]"
-                    : "bg-slate-200 border-4 sm:border-[6px] border-dashed border-slate-400 hover:bg-slate-300 active:bg-slate-400";
+                    ? "bg-white border-2 sm:border-[6px] border-indigo-500 shadow-[2px_2px_0px_rgba(79,70,229,1)] sm:shadow-[4px_4px_0px_rgba(79,70,229,1)] translate-x-[-1px] translate-y-[-1px]"
+                    : "bg-slate-200 border-2 sm:border-[6px] border-dashed border-slate-400 hover:bg-slate-300 active:bg-slate-400";
                 
+                // 修正點：手機版字體使用 text-lg，確保長句子絕對塞得下
                 const content = isRevealed
-                    ? `<span class="text-2xl sm:text-4xl lg:text-5xl font-black text-slate-900 leading-tight tracking-wide pointer-events-none">${clue}</span>`
-                    : `<span class="text-[5rem] sm:text-[8rem] font-black text-slate-400 opacity-60 pointer-events-none leading-none">?</span>`;
+                    ? `<span class="text-lg sm:text-4xl lg:text-5xl font-black text-slate-900 leading-tight sm:leading-snug tracking-wide pointer-events-none">${clue}</span>`
+                    : `<span class="text-[3rem] sm:text-[8rem] font-black text-slate-400 opacity-60 pointer-events-none leading-none">?</span>`;
 
                 return `<div onclick="revealSpecificClue(${idx})" class="${baseClasses} ${stateClasses}">${content}</div>`;
             }).join('');
@@ -720,7 +727,6 @@
                 revealedIndexes = [];
                 isShowAns = false;
                 
-                // 【新功能】跳轉題目的時候，自動記錄目前的進度
                 localStorage.setItem(PROGRESS_KEY_PREFIX + currentCityKey, currentQ);
                 
                 playSound('click');
@@ -745,7 +751,6 @@
             modal.classList.add('flex');
             title.textContent = keyword;
             
-            // 重置狀態
             imgEl.classList.add('hidden');
             errorEl.classList.add('hidden');
             prevBtn.classList.add('hidden');
@@ -758,7 +763,6 @@
             currentImgIdx = 0;
 
             try {
-                // 使用開源的 Wikimedia Commons API 搜尋相關圖片
                 const url = `https://commons.wikimedia.org/w/api.php?action=query&generator=search&gsrsearch=${encodeURIComponent(keyword)}&gsrnamespace=6&gsrlimit=10&prop=imageinfo&iiprop=url&format=json&origin=*`;
                 const res = await fetch(url);
                 const data = await res.json();
@@ -769,7 +773,6 @@
                         const info = pages[id].imageinfo;
                         if (info && info[0] && info[0].url) {
                             const imgUrl = info[0].url;
-                            // 過濾掉不適合的檔案格式，保留常見相片
                             if (imgUrl.match(/\.(jpeg|jpg|png|webp)$/i) && !imgUrl.includes('Ambox') && !imgUrl.includes('Commons-logo')) {
                                 imagesData.push(imgUrl);
                             }
@@ -790,7 +793,7 @@
                 errorEl.classList.add('flex');
             }
             
-            lucide.createIcons(); // 更新圖示
+            lucide.createIcons();
         }
 
         function closeImageSlider() {
@@ -798,7 +801,7 @@
             const modal = document.getElementById('image-slider-modal');
             modal.classList.add('hidden');
             modal.classList.remove('flex');
-            document.getElementById('slider-image').src = ""; // 釋放記憶體
+            document.getElementById('slider-image').src = ""; 
         }
 
         function updateSliderView() {
@@ -812,7 +815,6 @@
 
             counter.textContent = `${currentImgIdx + 1} / ${imagesData.length}`;
 
-            // 如果有多張圖才顯示左右按鈕
             if (imagesData.length > 1) {
                 prevBtn.classList.remove('hidden');
                 nextBtn.classList.remove('hidden');
@@ -838,7 +840,6 @@
             updateSliderView();
         }
 
-        // --- 支援手機觸控滑動 (Swipe) ---
         const sliderContent = document.getElementById('image-slider-content');
         sliderContent.addEventListener('touchstart', e => {
             touchStartX = e.changedTouches[0].screenX;
@@ -851,12 +852,12 @@
 
         function handleSwipe() {
             if (imagesData.length <= 1) return;
-            const threshold = 50; // 滑動感應距離
+            const threshold = 50;
             if (touchEndX < touchStartX - threshold) {
-                nextImage(); // 向左滑，下一張
+                nextImage();
             }
             if (touchEndX > touchStartX + threshold) {
-                prevImage(); // 向右滑，上一張
+                prevImage();
             }
         }
     </script>
